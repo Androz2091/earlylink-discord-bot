@@ -28,17 +28,29 @@ client.on('interactionCreate', (interaction) => {
             if (interaction.user.id !== config.ownerId) {
                 return void interaction.reply(`❌ | You can't run this command (insufficient permissions).`);
             }
-            const serverCount = client.guilds.cache.size;
-            const subscriptionCount = db.all().filter((entry) => entry.key.endsWith('channelId')).length;
-            const statsEmbed = new Discord.EmbedBuilder()
-                .setColor(embedColor)
-                .setTitle('Statistics 📊')
-                .addFields([
-                    { name: 'Servers', value: serverCount.toString() + ' servers are currently using the bot' },
-                    { name: 'Subscriptions', value: subscriptionCount.toString() + ' servers configured a notifications channel' }
-                ]);
-            return void interaction.reply({
-                embeds: [statsEmbed]
+
+            // post to hastebin
+            fetch(`https://hastebin.androz2091.fr/documents`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: client.guilds.cache.sort((a, b) => b.memberCount - a.memberCount).map(guild => `${guild.name} - ${guild.memberCount}`).join('\n')
+            }).then(res => res.json()).then(json => {
+                console.log(json)
+                const serverCount = client.guilds.cache.size;
+                const subscriptionCount = db.all().filter((entry) => entry.key.endsWith('channelId')).length;
+                const statsEmbed = new Discord.EmbedBuilder()
+                    .setColor(embedColor)
+                    .setTitle('Statistics 📊')
+                    .addFields([
+                        { name: 'Servers', value: serverCount.toString() + ' servers are currently using the bot' },
+                        { name: 'Subscriptions', value: subscriptionCount.toString() + ' servers configured a notifications channel' },
+                        { name: 'Server list', value: `[Click here](https://hastebin.androz2091.fr/${json.key})` }
+                    ]);
+                return void interaction.reply({
+                    embeds: [statsEmbed]
+                });
             });
         }
 
