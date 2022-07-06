@@ -24,8 +24,7 @@ const commands = [
             {
                 name: "role",
                 description: "The role to send notifications to",
-                type: ApplicationCommandOptionType.Role,
-                required: true
+                type: ApplicationCommandOptionType.Role
             }
         ]
     },

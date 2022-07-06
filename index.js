@@ -48,12 +48,20 @@ client.on('interactionCreate', (interaction) => {
 
         if (interaction.commandName === 'notifications-chan') {
             const channel = interaction.options.getChannel('channel');
+            const member = channel.guild.members.cache.get(client.user.id);
+            if (!channel.permissionsFor(member.id).has(Discord.PermissionsBitField.Flags.SendMessages)) {
+                return void interaction.reply(`❌ | I can't send messages in this channel.`);
+            }
             db.set(`${config.guildId}_channelId`, channel.id);
             return void interaction.reply(buildSuccessEmbed(`✅ | EarlyLink selections will now be sent to <#${channel.id}>`));
         }
 
         if (interaction.commandName === 'notifications-role') {
             const role = interaction.options.getRole('role');
+            if (!role) {
+                db.set(`${config.guildId}_roleId`, role.id);
+                return void interaction.reply(buildSuccessEmbed(`✅ | Notifications will not include a mention anymore.`));
+            }
             db.set(`${config.guildId}_roleId`, role.id);
             return void interaction.reply(buildSuccessEmbed(`✅ | Notifications will include a mention for <@&${role.id}>`));
         }
@@ -69,8 +77,13 @@ client.on('messageCreate', (message) => {
             const json = JSON.parse(message.content.replace('```json', '').replace('```', ''));
             const [_, twitterUsername] = json.linkedTwitter.match(/twitter\.com\/([a-zA-Z_0-9]+)/);
             if (!twitterUsername) return;
+
+            const [_m, _g1, _g2, text] = json.content ? json.content.match(/(https\:\/\/t\.co\/[A-Za-z0-9]+( )?){2} ([a-zA-Z]+)/) : [null, null, null, null];
+            if (!text) return;
+
             const notificationEmbed = new Discord.EmbedBuilder()
                 .setTitle(`${twitterUsername} has been selected by EarlyLink 🚀`)
+                .setDescription(text)
                 .setURL(`https://twitter.com/${twitterUsername}`)
                 .setImage(json.mediaUrl)
                 .setColor(embedColor)
