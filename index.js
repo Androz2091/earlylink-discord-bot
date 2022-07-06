@@ -78,12 +78,12 @@ client.on('messageCreate', (message) => {
             const [_, twitterUsername] = json.linkedTwitter.match(/twitter\.com\/([a-zA-Z_0-9]+)/);
             if (!twitterUsername) return;
 
-            const [_m, _g1, _g2, text] = json.content ? json.content.match(/(https\:\/\/t\.co\/[A-Za-z0-9]+( )?){2} ([a-zA-Z]+)/) : [null, null, null, null];
-            if (!text) return;
+//            const [_m, _g1, _g2, text] = json.content.match(/(https\:\/\/t\.co\/[A-Za-z0-9]+( )?){2} ([a-zA-Z]+)/) : [null, null, null, null];
+//            if (!text) return;
 
             const notificationEmbed = new Discord.EmbedBuilder()
                 .setTitle(`${twitterUsername} has been selected by EarlyLink 🚀`)
-                .setDescription(text)
+                //.setDescription(text)
                 .setURL(`https://twitter.com/${twitterUsername}`)
                 .setImage(json.mediaUrl)
                 .setColor(embedColor)
